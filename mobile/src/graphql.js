@@ -1,11 +1,18 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, gql } from '@apollo/client';
-import { AsyncStorageWrapper, persistCache } from 'apollo3-cache-persist';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  ApolloClient,
+  ApolloLink,
+  HttpLink,
+  InMemoryCache,
+  gql,
+} from "@apollo/client";
+import { AsyncStorageWrapper, persistCache } from "apollo3-cache-persist";
 
 // For a physical device use your machine's LAN IP or the deployed AWS URL.
-export const GRAPHQL_URL = process.env.EXPO_PUBLIC_GRAPHQL_URL || 'http://localhost:4000/';
-export const TOKEN_KEY = 'tactlink.token';
-export const USER_KEY = 'tactlink.user';
+export const GRAPHQL_URL =
+  process.env.EXPO_PUBLIC_GRAPHQL_URL || "http://localhost:4000/";
+export const TOKEN_KEY = "tactlink.token";
+export const USER_KEY = "tactlink.user";
 
 let token = null;
 export const setAuthToken = (t) => {
@@ -14,7 +21,10 @@ export const setAuthToken = (t) => {
 
 const authLink = new ApolloLink((operation, forward) => {
   operation.setContext(({ headers = {} }) => ({
-    headers: { ...headers, ...(token ? { authorization: `Bearer ${token}` } : {}) },
+    headers: {
+      ...headers,
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
+    },
   }));
   return forward(operation);
 });
@@ -29,37 +39,67 @@ export async function createClient() {
   return new ApolloClient({
     link: ApolloLink.from([authLink, new HttpLink({ uri: GRAPHQL_URL })]),
     cache,
-    defaultOptions: { watchQuery: { fetchPolicy: 'cache-and-network' } },
+    defaultOptions: { watchQuery: { fetchPolicy: "cache-and-network" } },
   });
 }
 
 export const SIGNUP = gql`
   mutation Signup($email: String!, $password: String!) {
-    signup(email: $email, password: $password) { token user { id email } }
+    signup(email: $email, password: $password) {
+      token
+      user {
+        id
+        email
+      }
+    }
   }
 `;
 export const LOGIN = gql`
   mutation Login($email: String!, $password: String!) {
-    login(email: $email, password: $password) { token user { id email } }
+    login(email: $email, password: $password) {
+      token
+      user {
+        id
+        email
+      }
+    }
   }
 `;
 const TODO_FIELDS = gql`
-  fragment TodoFields on Todo { id title completed createdAt updatedAt }
+  fragment TodoFields on Todo {
+    id
+    title
+    completed
+    createdAt
+    updatedAt
+  }
 `;
 export const TODOS = gql`
   ${TODO_FIELDS}
-  query Todos { todos { ...TodoFields } }
+  query Todos {
+    todos {
+      ...TodoFields
+    }
+  }
 `;
 export const CREATE_TODO = gql`
   ${TODO_FIELDS}
-  mutation CreateTodo($title: String!) { createTodo(title: $title) { ...TodoFields } }
+  mutation CreateTodo($title: String!) {
+    createTodo(title: $title) {
+      ...TodoFields
+    }
+  }
 `;
 export const UPDATE_TODO = gql`
   ${TODO_FIELDS}
   mutation UpdateTodo($id: ID!, $title: String, $completed: Boolean) {
-    updateTodo(id: $id, title: $title, completed: $completed) { ...TodoFields }
+    updateTodo(id: $id, title: $title, completed: $completed) {
+      ...TodoFields
+    }
   }
 `;
 export const DELETE_TODO = gql`
-  mutation DeleteTodo($id: ID!) { deleteTodo(id: $id) }
+  mutation DeleteTodo($id: ID!) {
+    deleteTodo(id: $id)
+  }
 `;

@@ -9,10 +9,10 @@ software-engineer-test/
 └── mobile/    React Native (Expo) + Apollo Client + React Navigation — offline cache
 ```
 
-| Deliverable | Link |
-|---|---|
-| GitHub repository | https://github.com/miwaaatin/tactdo |
-| Web app (Vercel) | `https://tactdo.vercel.app` |
+| Deliverable              | Link                                                                  |
+| ------------------------ | --------------------------------------------------------------------- |
+| GitHub repository        | https://github.com/miwaaatin/tactdo                                   |
+| Web app (Vercel)         | `https://tactdo.vercel.app`                                           |
 | GraphQL API (AWS Lambda) | `https://0gt67lknw3.execute-api.ap-southeast-1.amazonaws.com/graphql` |
 
 ---
@@ -20,15 +20,18 @@ software-engineer-test/
 ## 1. Backend
 
 ### Run locally
+
 ```bash
 cd backend
 npm install
 npm run dev            # http://localhost:4000  (Apollo Sandbox in the browser)
 node scripts/smoke.js  # end-to-end test: signup → login → CRUD → auth check
 ```
+
 Data is persisted to `backend/db.json`.
 
 ### API
+
 ```graphql
 type Query    { me: User, todos: [Todo!]!, todo(id: ID!): Todo }
 type Mutation {
@@ -37,9 +40,11 @@ type Mutation {
   deleteTodo(id): ID!
 }
 ```
+
 Send `Authorization: Bearer <token>` for to-do operations.
 
 ### Deploy to AWS (Lambda + API Gateway + DynamoDB)
+
 ```bash
 cd backend
 # credentials: run aws configure once (or use AWS credential environment variables)
@@ -47,21 +52,25 @@ $env:JWT_SECRET="<long-random-string>"        # PowerShell  (bash: export JWT_SE
 npx serverless@3 deploy --stage prod
 node scripts/smoke.js https://0gt67lknw3.execute-api.ap-southeast-1.amazonaws.com/graphql
 ```
+
 Deployed to `ap-southeast-1` (Singapore) on 26 October 2026. Live smoke test passed signup, login, create/update/list/delete, and unauthenticated rejection. Lambda runs Node.js 22 with DynamoDB persistence.
 
 See [docs/AWS_DEPLOYMENT.md](docs/AWS_DEPLOYMENT.md) for architecture, redeployment instructions (reuse the existing JWT secret), and cost.
 
 ## 2. Web
+
 ```bash
 cd web
 npm install
 cp .env.example .env    # set VITE_GRAPHQL_URL
 npm run dev             # http://localhost:5173
 ```
-**Vercel:** import the repo → Root Directory `web` → Framework *Vite* → env var `VITE_GRAPHQL_URL=<AWS URL>` → Deploy.
+
+**Vercel:** import the repo → Root Directory `web` → Framework _Vite_ → env var `VITE_GRAPHQL_URL=<AWS URL>` → Deploy.
 (or CLI: `cd web && npx vercel --prod`)
 
 ## 3. Mobile
+
 ```bash
 cd mobile
 npm install
@@ -94,12 +103,13 @@ For Expo Go on iOS, sign in to Expo CLI and Expo Go with the same Expo account. 
   `vercel.json` SPA rewrite so deep links work.
 
 ## Time taken (estimated)
-| Part | Time |
-|---|---|
-| Backend | ~1.2 hours |
-| Mobile | ~1.6 hours |
-| Web | ~1.2 hours |
-| Cloud | ~0.8 hours |
+
+| Part      | Time           |
+| --------- | -------------- |
+| Backend   | ~1.2 hours     |
+| Mobile    | ~1.6 hours     |
+| Web       | ~1.2 hours     |
+| Cloud     | ~0.8 hours     |
 | **Total** | **~4.8 hours** |
 
 These are approximate effort estimates, not a measured time log.
