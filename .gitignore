@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.env
+.env.local
+db.json
+.serverless/
+.expo/
+web-build/
+*.log
+.DS_Store
+
+.vercel/
+.env.*
+!.env.example
+
+# Machine-specific development launcher
+mobile/start-mobile.ps1

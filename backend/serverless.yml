@@ -1,0 +1,63 @@
+# Deploy: npx serverless@3 deploy --stage prod
+# Requires AWS credentials (aws configure, or AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY env vars)
+service: tactlink-todo-api
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: ${opt:region, 'ap-southeast-1'}
+  stage: ${opt:stage, 'dev'}
+  memorySize: 512
+  timeout: 10
+  architecture: arm64
+  environment:
+    TABLE_NAME: ${self:service}-${self:provider.stage}
+    JWT_SECRET: ${env:JWT_SECRET}
+    NODE_OPTIONS: --enable-source-maps
+  httpApi:
+    cors:
+      allowedOrigins: ['*']
+      allowedHeaders: [Content-Type, Authorization, apollo-require-preflight]
+      allowedMethods: [GET, POST, OPTIONS]
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:DeleteItem
+            - dynamodb:Query
+          Resource: !GetAtt TodoTable.Arn
+
+package:
+  patterns:
+    - '!db.json'
+    - '!scripts/**'
+    - '!.serverless/**'
+
+functions:
+  graphql:
+    handler: src/lambda.handler
+    events:
+      - httpApi:
+          path: /graphql
+          method: POST
+      - httpApi:
+          path: /graphql
+          method: GET
+
+resources:
+  Resources:
+    TodoTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.TABLE_NAME}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - { AttributeName: pk, AttributeType: S }
+          - { AttributeName: sk, AttributeType: S }
+        KeySchema:
+          - { AttributeName: pk, KeyType: HASH }
+          - { AttributeName: sk, KeyType: RANGE }
